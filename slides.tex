@@ -1,0 +1,132 @@
+\documentclass[UKenglish,usenames,dvipsnames,svgnames,table,aspectratio=1610,mathserif]{beamer}
+
+\mode<presentation> {
+
+%\usetheme{default}
+\usetheme{Madrid}
+
+\setbeamertemplate{footline} % To remove the footer line in all slides uncomment this line
+
+\setbeamertemplate{navigation symbols}{} % To remove the navigation symbols from the bottom of all slides uncomment this line
+}
+
+\usepackage{graphicx} % Allows including images
+\usepackage{booktabs} % Allows the use of \toprule, \midrule and \bottomrule in tables
+\usepackage{hyperref}
+\usepackage{apacite}
+\usepackage{babel}
+\usepackage{fancyvrb}
+\usepackage{color}
+\usepackage{alltt}
+\usepackage{listings}
+\usepackage{framed}
+\usepackage{courier}
+\usepackage{minted}
+\usepackage{epstopdf}
+\usepackage{xifthen}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+\usepackage{gensymb}
+\usepackage{svg}
+\usepackage{pdfpages}
+\usepackage{isodate}
+
+\hypersetup{colorlinks=false}
+
+\setbeamertemplate{bibliography entry title}{}
+\setbeamertemplate{bibliography entry location}{}
+\setbeamertemplate{bibliography entry note}{}
+\setbeamertemplate{itemize items}[circle]
+\setbeamertemplate{enumerate items}[circle]
+\beamertemplatenavigationsymbolsempty
+\setbeamertemplate{footline}{}
+
+\newminted{haskell}{}
+
+\definecolor{g}{RGB}{0,100,0}
+\newcommand{\highlight}[1]{\colorbox{yellow}{#1}}
+\newcommand{\nega}[1]{\colorbox{yellow}{#1}}
+\newcommand{\posi}[1]{\colorbox{green}{#1}}
+\newcommand{\nl}{\vspace{\baselineskip}}
+\newcommand{\pnl}{\pause \nl}
+
+\graphicspath{{diagrams/}}
+
+\newcommand{\textslide}[1]{{
+\begin{frame}
+\begin{center}
+
+#1
+
+\end{center}
+\end{frame}
+}}
+
+\newcommand{\textslideleft}[1]{{
+\begin{frame}
+
+#1
+
+\end{frame}
+}}
+
+\newcommand{\codeslide}[1]{{
+\begin{frame}[fragile]
+\begin{haskellcode}
+#1
+\end{haskellcode}
+\end{frame}
+}}
+
+\newcommand{\imageslide}[2][1]{{
+\begin{frame}\begin{center}
+\includegraphics[scale=#1]{#2}
+\end{center}\end{frame}
+}}
+
+\newcommand{\imageslideleft}[2][1]{{
+\begin{frame}
+\includegraphics[scale=#1]{#2}
+\end{frame}
+}}
+
+\newcommand{\imagetextslide}[3][1]{{
+\begin{frame}\begin{center}
+
+{#3}
+
+\includegraphics[scale=#1]{#2}
+\end{center}\end{frame}
+}}
+
+%%----------------------------------------------------------------------------------------
+%	TITLE PAGE
+%----------------------------------------------------------------------------------------
+
+\title[Monoids]{Monoids: an introduction to lawful structures}
+\author{George Wilson}
+\institute[]
+{
+\href{george@wils.online}{george@wils.online}
+}
+
+\selectlanguage{UKenglish}
+\date{\printdate{2026-10-13}}
+
+\begin{document}
+
+
+%%%%%
+%%%%% Intro section
+%%%%%
+
+
+\begin{frame}
+\titlepage
+\end{frame}
+
+\textslide{\Large{Thanks for listening!}}
+
+
+\end{document}
