@@ -1,4 +1,4 @@
-\documentclass[UKenglish,usenames,dvipsnames,svgnames,table,aspectratio=1610,mathserif]{beamer}
+\documentclass[UKenglish,usenames,dvipsnames,svgnames,table,aspectratio=169,mathserif]{beamer}
 
 \mode<presentation> {
 
@@ -116,15 +116,218 @@
 
 \begin{document}
 
-
-%%%%%
-%%%%% Intro section
-%%%%%
-
-
 \begin{frame}
 \titlepage
 \end{frame}
+
+
+\begin{frame}
+\frametitle{Outline}
+\begin{center}
+\begin{minipage}{0.6\textwidth}
+Let's look at:
+\begin{itemize}
+\item Basic Haskell syntax
+\item A simple example type class
+\item The Monoid type class (including laws)
+\item Examples of monoid instances
+\item Why laws are helpful
+\end{itemize}
+\end{minipage}
+\end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Values and types}
+\begin{center}
+\begin{minipage}{0.6\textwidth}
+\begin{haskellcode}
+x :: Int
+x = 5 + 10
+\end{haskellcode}
+\end{minipage}
+\end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Strings and concatenation}
+\begin{center}
+\begin{minipage}{0.6\textwidth}
+\begin{haskellcode}
+name :: String
+name = "BFPG"
+
+greeting :: String
+greeting = "Hello, " ++ name ++ "!"
+
+\end{haskellcode}
+\pause
+\hrule
+\begin{haskellcode}
+
+> greeting
+-- "Hello, BFPG!"
+\end{haskellcode}
+\end{minipage}
+\end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Functions on strings}
+\begin{center}
+\begin{minipage}{0.6\textwidth}
+\begin{haskellcode}
+greet :: String -> String
+greet n = "Hello, " ++ n ++ "!"
+
+\end{haskellcode}
+\pause
+\hrule
+\begin{haskellcode}
+
+> greet name
+-- "Hello, BFPG!"
+\end{haskellcode}
+\end{minipage}
+\end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Custom data types}
+\begin{center}
+\begin{minipage}{0.6\textwidth}
+\begin{haskellcode}
+data TrafficLight
+  = Red
+  | Yellow
+  | Green
+\end{haskellcode}
+\end{minipage}
+\end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Our first type class}
+\begin{center}
+\begin{minipage}{0.6\textwidth}
+\begin{haskellcode}
+class Show a where
+  show :: a -> String
+
+\end{haskellcode}
+\pause
+\begin{haskellcode}
+instance Show TrafficLight where
+  show tl =
+    case tl of
+      Red -> "Red"
+      Yellow -> "Yellow"
+      Green -> "Green"
+\end{haskellcode}
+\end{minipage}
+\end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Functions with type class constraints}
+\begin{center}
+\begin{minipage}{0.6\textwidth}
+\begin{haskellcode}
+greet :: Show a => a -> String
+greet s = "Hello, " ++ show s ++ "!"
+
+\end{haskellcode}
+\pause
+\hrule
+\begin{haskellcode}
+
+> greet Yellow
+-- "Hello, Yellow!"
+\end{haskellcode}
+\pause
+\begin{haskellcode}
+
+> greet 5
+-- "Hello, 5!"
+\end{haskellcode}
+
+\pause
+\begin{haskellcode}
+
+> greet (++)
+-- Error: No Show instance for
+--        (String -> String -> String)
+\end{haskellcode}
+
+\end{minipage}
+\end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Monoid}
+\begin{center}
+\begin{minipage}{0.6\textwidth}
+\begin{haskellcode}
+class Monoid m where
+  mappend :: m -> m -> m
+  mempty  :: m
+\end{haskellcode}
+\pause
+\begin{haskellcode}
+instance Monoid String where
+  mappend s t = s ++ t
+  mempty = ""
+\end{haskellcode}
+\end{minipage}
+\end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Monoid laws}
+\begin{center}
+\begin{minipage}{0.6\textwidth}
+Left identity:
+
+\begin{haskellcode}
+-- for all x.
+mappend mempty x == x
+\end{haskellcode}
+
+\hrule
+
+\bigskip
+
+Right identity:
+
+\begin{haskellcode}
+-- for all x.
+mappend x mempty == x
+\end{haskellcode}
+
+\hrule
+
+\bigskip
+
+Associativity:
+
+\begin{haskellcode}
+-- for all x y z.
+mappend x (mappend y z) == mappend (mappend x y) z
+\end{haskellcode}
+
+\end{minipage}
+\end{center}
+\end{frame}
+
+
 
 \textslide{\Large{Thanks for listening!}}
 
