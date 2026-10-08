@@ -131,6 +131,7 @@ Let's look at:
 \item A simple example type class
 \item The Monoid type class (including laws)
 \item Examples of monoid instances
+\item Examples of functions defined for all monoids
 \item Why laws are helpful
 \end{itemize}
 \end{minipage}
@@ -156,11 +157,11 @@ x = 5 + 10
 \begin{center}
 \begin{minipage}{0.6\textwidth}
 \begin{haskellcode}
-name :: String
-name = "BFPG"
+bfpg :: String
+bfpg = "BFPG"
 
 greeting :: String
-greeting = "Hello, " ++ name ++ "!"
+greeting = "Hello, " ++ bfpg ++ "!"
 
 \end{haskellcode}
 \pause
@@ -181,15 +182,42 @@ greeting = "Hello, " ++ name ++ "!"
 \begin{minipage}{0.6\textwidth}
 \begin{haskellcode}
 greet :: String -> String
-greet n = "Hello, " ++ n ++ "!"
+greet name = "Hello, " ++ name ++ "!"
 
 \end{haskellcode}
 \pause
 \hrule
 \begin{haskellcode}
 
-> greet name
+> greet bfpg
 -- "Hello, BFPG!"
+\end{haskellcode}
+\end{minipage}
+\end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Custom datatypes}
+\begin{center}
+\begin{minipage}{0.6\textwidth}
+\begin{haskellcode}
+data MeetupGroup =
+  MeetupGroup {
+    name :: String,
+    url :: String,
+    description :: String
+  }
+\end{haskellcode}
+\pause
+\begin{haskellcode}
+bfpgMeetup :: MeetupGroup
+bfpgMeetup =
+  MeetupGroup {
+    name = "Brisbane Functional Programming Group",
+    url = "https://luma.com/bfpg",
+    description = "a bunch of lambda heads"
+  }
 \end{haskellcode}
 \end{minipage}
 \end{center}
@@ -212,7 +240,7 @@ data TrafficLight
 
 
 \begin{frame}[fragile]
-\frametitle{Our first type class}
+\frametitle{Type classes}
 \begin{center}
 \begin{minipage}{0.6\textwidth}
 \begin{haskellcode}
@@ -281,6 +309,11 @@ class Monoid m where
 \end{haskellcode}
 \pause
 \begin{haskellcode}
+-- mappend as an infix operator, for convenience
+x <> y = mappend x y
+\end{haskellcode}
+\pause
+\begin{haskellcode}
 instance Monoid String where
   mappend s t = s ++ t
   mempty = ""
@@ -298,31 +331,210 @@ Left identity:
 
 \begin{haskellcode}
 -- for all x.
-mappend mempty x == x
+mempty <> x == x
 \end{haskellcode}
 
+\pause
 \hrule
-
 \bigskip
 
 Right identity:
 
 \begin{haskellcode}
 -- for all x.
-mappend x mempty == x
+x <> mempty == x
 \end{haskellcode}
 
+\pause
 \hrule
-
 \bigskip
 
 Associativity:
 
 \begin{haskellcode}
 -- for all x y z.
-mappend x (mappend y z) == mappend (mappend x y) z
+x <> (y <> z) == (x <> y) <> z
 \end{haskellcode}
 
+\end{minipage}
+\end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Monoid laws specialised to strings}
+\begin{center}
+\begin{minipage}{0.6\textwidth}
+Left identity:
+
+\begin{haskellcode}
+-- for all x.
+"" ++ x == x
+\end{haskellcode}
+
+\hrule
+\bigskip
+
+Right identity:
+
+\begin{haskellcode}
+-- for all x.
+x ++ "" == x
+\end{haskellcode}
+
+\hrule
+\bigskip
+
+Associativity:
+
+\begin{haskellcode}
+-- for all x y z.
+x ++ (y ++ z) == (x ++ y) ++ z
+\end{haskellcode}
+
+\end{minipage}
+\end{center}
+\end{frame}
+
+
+\textslide{What are some other types that fit monoid?}
+
+
+\begin{frame}[fragile]
+\frametitle{Integer instances?}
+\begin{center}
+\begin{minipage}{0.6\textwidth}
+\begin{haskellcode}
+-- integers?
+x + (y + z) == (x + y) + z
+\end{haskellcode}
+\pause
+
+\begin{haskellcode}
+x * (y * z) == (x * y) * z
+\end{haskellcode}
+
+\end{minipage}
+\end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Integer instances?}
+\begin{center}
+\begin{minipage}{0.6\textwidth}
+
+We can't have multiple instances like this in Haskell
+
+\begin{haskellcode}
+instance Monoid Integer where
+  mappend x y = x + y
+  mempty = 0
+
+instance Monoid Integer where
+  mappend x y = x * y
+  mempty = 1
+\end{haskellcode}
+\end{minipage}
+\end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Integer instances with newtype wrappers}
+\begin{center}
+\begin{minipage}{0.6\textwidth}
+\begin{haskellcode}
+newtype Sum = Sum { unwrapSum :: Integer }
+\end{haskellcode}
+\pause
+
+\begin{haskellcode}
+instance Monoid Sum where
+  mappend (Sum x) (Sum y) = Sum (x + y)
+  mempty = Sum 0
+\end{haskellcode}
+\pause
+\bigskip
+
+\begin{haskellcode}
+newtype Product = Product { unwrapProduct :: Integer }
+instance Monoid Product where
+  mappend (Product x) (Product y) = Product (x * y)
+  mempty = Product 1
+\end{haskellcode}
+\end{minipage}
+\end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Derived functions}
+\begin{center}
+\begin{minipage}{0.6\textwidth}
+\begin{haskellcode}
+mconcat :: Monoid m => [m] -> m
+
+\end{haskellcode}
+
+\hrule
+
+\begin{haskellcode}
+> mconcat [Sum 1, Sum 2, Sum 3, Sum 4]
+-- Sum 10
+\end{haskellcode}
+\end{minipage}
+\end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Trees}
+\begin{center}
+\begin{minipage}{0.6\textwidth}
+\begin{haskellcode}
+data Tree a = Leaf a | Branch (Tree a) (Tree a)
+
+\end{haskellcode}
+\pause
+\begin{haskellcode}
+concatTree :: Monoid m => Tree m -> m
+concatTree t =
+  case t of
+    Leaf m -> m
+    Branch t u -> concatTree t <> concatTree u
+\end{haskellcode}
+\end{minipage}
+\end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Derived functions}
+\begin{center}
+\begin{minipage}{0.6\textwidth}
+\begin{haskellcode}
+class Foldable f where
+  fold :: Monoid m => f m -> m
+\end{haskellcode}
+\pause
+\begin{haskellcode}
+  -- much more exciting
+  foldMap :: Monoid m => (a -> m) -> f a -> m
+\end{haskellcode}
+\pause
+\begin{haskellcode}
+instance Foldable [] where
+  foldMap a2m list = mconcat (map a2m list)
+\end{haskellcode}
+\pause
+\begin{haskellcode}
+instance Foldable Tree where
+  foldMap a2m tree =
+    case tree of
+      Leaf a -> a2m a
+      Branch t u -> foldMap a2m t <> foldMap a2m u
+\end{haskellcode}
 \end{minipage}
 \end{center}
 \end{frame}
