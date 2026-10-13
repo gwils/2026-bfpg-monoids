@@ -144,7 +144,7 @@ Let's look at:
 \begin{center}
 \begin{minipage}{0.6\textwidth}
 \begin{haskellcode}
-x :: Int
+x :: Integer
 x = 5 + 10
 \end{haskellcode}
 \end{minipage}
@@ -298,6 +298,13 @@ greet s = "Hello, " ++ show s ++ "!"
 \end{frame}
 
 
+\textslide{
+We've seen Haskell expressions, data types, functions, and type classes.
+\medskip
+
+Any questions so far?
+}
+
 \begin{frame}[fragile]
 \frametitle{Monoid}
 \begin{center}
@@ -309,14 +316,14 @@ class Monoid m where
 \end{haskellcode}
 \pause
 \begin{haskellcode}
--- mappend as an infix operator, for convenience
-x <> y = mappend x y
-\end{haskellcode}
-\pause
-\begin{haskellcode}
 instance Monoid String where
   mappend s t = s ++ t
   mempty = ""
+\end{haskellcode}
+\pause
+\begin{haskellcode}
+-- mappend as an infix operator, for convenience
+x <> y = mappend x y
 \end{haskellcode}
 \end{minipage}
 \end{center}
@@ -397,20 +404,149 @@ x ++ (y ++ z) == (x ++ y) ++ z
 \end{frame}
 
 
+\begin{frame}[fragile]
+\frametitle{Pretty printing}
+\begin{center}
+\begin{minipage}{0.6\textwidth}
+Imagine we are trying to pretty print LISP s-expressions
+\begin{haskellcode}
+
+
+
+
+expr =
+  openParen <> "+" <> space <> "3"
+    <> space <> "4" <> closeParen
+
+-- (+ 3 4)
+\end{haskellcode}
+\end{minipage}
+\end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Pretty printing}
+\begin{center}
+\begin{minipage}{0.6\textwidth}
+1: Factor out the parens to a helper function
+
+\begin{haskellcode}
+parens x = openParen <> x <> closeParen
+
+
+
+expr =
+  parens ("+" <> space <> "3" <> space <> "4")
+
+
+-- (+ 3 4)
+\end{haskellcode}
+\end{minipage}
+\end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Pretty printing}
+\begin{center}
+\begin{minipage}{0.6\textwidth}
+2: Factor out the space separation to a helper function
+
+\begin{haskellcode}
+parens x = openParen <> x <> closeParen
+
+spaceSep list = ... -- omitted for brevity
+
+expr =
+  parens (spaceSep ["+", "3", "4"])
+
+
+-- (+ 3 4)
+\end{haskellcode}
+\end{minipage}
+\end{center}
+\end{frame}
+
+
+\textslide{
+Extracting a helper function usually depends on associativity
+
+\medskip
+Extracting helper functions is awesome
+
+\medskip
+Therefore associativity is awesome!
+}
+
+
 \textslide{What are some other types that fit monoid?}
 
 
 \begin{frame}[fragile]
-\frametitle{Integer instances?}
+\frametitle{Monoid laws specialised to addition}
 \begin{center}
 \begin{minipage}{0.6\textwidth}
-\begin{haskellcode}
--- integers?
-x + (y + z) == (x + y) + z
-\end{haskellcode}
-\pause
+Left identity:
 
 \begin{haskellcode}
+-- for all x.
+0 + x == x
+\end{haskellcode}
+
+\hrule
+\bigskip
+
+Right identity:
+
+\begin{haskellcode}
+-- for all x.
+x + 0 == x
+\end{haskellcode}
+
+\hrule
+\bigskip
+
+Associativity:
+
+\begin{haskellcode}
+-- for all x y z.
+x + (y + z) == (x + y) + z
+\end{haskellcode}
+
+\end{minipage}
+\end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Monoid laws specialised to multiplication}
+\begin{center}
+\begin{minipage}{0.6\textwidth}
+Left identity:
+
+\begin{haskellcode}
+-- for all x.
+1 * x == x
+\end{haskellcode}
+
+\hrule
+\bigskip
+
+Right identity:
+
+\begin{haskellcode}
+-- for all x.
+x * 1 == x
+\end{haskellcode}
+
+\hrule
+\bigskip
+
+Associativity:
+
+\begin{haskellcode}
+-- for all x y z.
 x * (y * z) == (x * y) * z
 \end{haskellcode}
 
@@ -468,6 +604,11 @@ instance Monoid Product where
 \end{frame}
 
 
+\textslide{Now we have a bunch of monoids.
+
+What can we do with them?}
+
+
 \begin{frame}[fragile]
 \frametitle{Derived functions}
 \begin{center}
@@ -477,12 +618,162 @@ mconcat :: Monoid m => [m] -> m
 
 \end{haskellcode}
 
+\pause
 \hrule
 
 \begin{haskellcode}
 > mconcat [Sum 1, Sum 2, Sum 3, Sum 4]
 -- Sum 10
 \end{haskellcode}
+
+\pause
+
+\begin{haskellcode}
+> mconcat (map Sum [1, 2, 3, 4])
+-- Sum 10
+\end{haskellcode}
+
+\pause
+
+\begin{haskellcode}
+> mconcat (map Sum [])
+-- Sum 0
+\end{haskellcode}
+that's mempty
+\end{minipage}
+\end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Derived functions}
+\begin{center}
+\begin{minipage}{0.6\textwidth}
+
+Is mconcat implemented using a left fold or a right fold?
+
+\begin{haskellcode}
+Sum 1 <> (Sum 2 <> (Sum 3 <> (Sum 4 <> mempty)))
+\end{haskellcode}
+
+or
+
+\begin{haskellcode}
+(((mempty <> Sum 1) <> Sum 2) <> Sum 3) <> Sum 4
+\end{haskellcode}
+
+\bigskip
+
+Answer: We don't have to care, because of associativity
+
+\end{minipage}
+\end{center}
+\end{frame}
+
+
+\begin{frame}
+\frametitle{Parallelism}
+\begin{center}
+\includesvg[scale=0.6]{diagrams/multicore1.drawio.svg}
+\end{center}
+\end{frame}
+\begin{frame}
+\frametitle{Parallelism}
+\begin{center}
+\includesvg[scale=0.6]{diagrams/multicore2.drawio.svg}
+\end{center}
+\end{frame}
+\begin{frame}
+\frametitle{Parallelism}
+\begin{center}
+\includesvg[scale=0.6]{diagrams/multicore3.drawio.svg}
+\end{center}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\frametitle{Putting Monoids together}
+\begin{center}
+\begin{minipage}{0.6\textwidth}
+\begin{haskellcode}
+data Mean =
+  Mean {
+    total :: Integer,
+    count :: Integer
+  }
+\end{haskellcode}
+\pause
+
+\begin{haskellcode}
+instance Monoid Mean where
+  mappend (Mean t1 c1) (Mean t2 c2) =
+    Mean (t1 + t2) (c1 + c2)
+  mempty =
+    Mean 0 0
+\end{haskellcode}
+\pause
+
+\begin{haskellcode}
+makeMean :: Integer -> Mean
+makeMean num = Mean { total = num, count = 1 }
+
+getMean :: Mean -> Double
+getMean (Mean total count) =
+  fromIntegral total / fromIntegral count
+\end{haskellcode}
+\end{minipage}
+\end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Means}
+\begin{center}
+\begin{minipage}{0.6\textwidth}
+\begin{haskellcode}
+> mconcat (map makeMean [1,2,3,4,5])
+-- Mean { total = 15, count = 5 }
+\end{haskellcode}
+\pause
+\begin{haskellcode}
+> getMean (mconcat (map makeMean [1,2,3,4,5]))
+-- 3.0
+\end{haskellcode}
+\end{minipage}
+\end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Generalised mconcat}
+\begin{center}
+\begin{minipage}{0.6\textwidth}
+\begin{haskellcode}
+class Foldable f where
+  foldMap :: Monoid m => (a -> m) -> f a -> m
+\end{haskellcode}
+\pause
+\begin{haskellcode}
+instance Foldable [] where
+  foldMap a2m list = mconcat (map a2m list)
+\end{haskellcode}
+\end{minipage}
+\end{center}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Generalised mean}
+\begin{center}
+\begin{minipage}{0.6\textwidth}
+\begin{haskellcode}
+mean :: Foldable f => f Integer -> Double
+mean ints = getMean (foldMap makeMean ints)
+\end{haskellcode}
+\medskip
+
+This function takes the mean of a structure, without caring about the "shape" of the structure
 \end{minipage}
 \end{center}
 \end{frame}
@@ -496,13 +787,15 @@ mconcat :: Monoid m => [m] -> m
 data Tree a = Leaf a | Branch (Tree a) (Tree a)
 
 \end{haskellcode}
+
 \pause
 \begin{haskellcode}
-concatTree :: Monoid m => Tree m -> m
-concatTree t =
-  case t of
-    Leaf m -> m
-    Branch t u -> concatTree t <> concatTree u
+instance Foldable Tree where
+  foldMap a2m tree =
+    case tree of
+      Leaf a -> a2m a
+      Branch t u ->
+        foldMap a2m t <> foldMap a2m u
 \end{haskellcode}
 \end{minipage}
 \end{center}
@@ -510,38 +803,84 @@ concatTree t =
 
 
 \begin{frame}[fragile]
-\frametitle{Derived functions}
+\frametitle{Trees}
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\begin{haskellcode}
+myTree =
+  Branch
+    (Branch (Leaf 1) (Leaf 2))
+    (Branch
+      (Branch (Leaf 3) (Leaf 4))
+      (Leaf 5)
+    )
+\end{haskellcode}
+\end{column}
+\begin{column}{0.5\textwidth}
+\includesvg[scale=0.4]{diagrams/tree1.drawio.svg}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Trees}
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\begin{haskellcode}
+foldMap Sum myTree
+\end{haskellcode}
+\end{column}
+\begin{column}{0.5\textwidth}
+\includesvg[scale=0.4]{diagrams/tree2.drawio.svg}
+\end{column}
+\end{columns}
+\end{frame}
+
+
+\textslide{There are many more foldable structures}
+
+
+\begin{frame}
+\frametitle{Outline}
 \begin{center}
 \begin{minipage}{0.6\textwidth}
-\begin{haskellcode}
-class Foldable f where
-  fold :: Monoid m => f m -> m
-\end{haskellcode}
-\pause
-\begin{haskellcode}
-  -- much more exciting
-  foldMap :: Monoid m => (a -> m) -> f a -> m
-\end{haskellcode}
-\pause
-\begin{haskellcode}
-instance Foldable [] where
-  foldMap a2m list = mconcat (map a2m list)
-\end{haskellcode}
-\pause
-\begin{haskellcode}
-instance Foldable Tree where
-  foldMap a2m tree =
-    case tree of
-      Leaf a -> a2m a
-      Branch t u -> foldMap a2m t <> foldMap a2m u
-\end{haskellcode}
+We've seen:
+
+\begin{itemize}
+\item Monoid typeclass and its laws
+\item multiple instances of monoid (String, Sum, Product)
+\item Laws allowed us to extract helper functions
+\item combining instances to make new instances (Mean)
+\item Functions that work on all monoids (mconcat, foldMap)
+\item Laws allowed us to concatenate structures regardless of their shapes
+\end{itemize}
 \end{minipage}
 \end{center}
 \end{frame}
 
 
+\textslide{
+There is much more to monoids.
+\medskip
+
+There are many other sturctures with laws.
+}
 
 \textslide{\Large{Thanks for listening!}}
 
+
+\begin{frame}[fragile]
+\frametitle{spaceSep}
+\begin{center}
+\begin{minipage}{0.6\textwidth}
+\begin{haskellcode}
+spaceSep [] = mempty
+spaceSep (x:[]) = x
+spaceSep (x:y:rest) = x <> space <> spaceSep (y:rest)
+\end{haskellcode}
+\end{minipage}
+\end{center}
+\end{frame}
 
 \end{document}

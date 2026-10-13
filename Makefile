@@ -10,7 +10,7 @@ SPELL = aspell check -len_GB
 
 slides: slides.pdf
 
-slides.pdf: $(SLIDES_TEX)
+slides.pdf: $(SLIDES_TEX) diagrams/*.svg
 	$(LATEX_SLIDES)
 	$(LATEX_SLIDES)
 	$(LATEX_SLIDES)
